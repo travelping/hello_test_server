@@ -4,7 +4,6 @@ defmodule HelloPingpong.Mixfile do
   def project do
     [app: :hello_pingpong,
      version: "0.0.1",
-     elixir: "~> 1.1-dev",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps]
