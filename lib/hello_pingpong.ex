@@ -29,7 +29,8 @@ defmodule HelloPingpong do
   def init(identifier, _), do: {:ok, 0}
 
   def handle_request(_context, "Server.ping", _args, state) do
-    {:reply, {:ok, "pong"}, state}
+    :crypto.rand_uniform(1, 1000) |> :timer.sleep
+    {:stop, :normal, {:ok, "pong"}, state}
   end
 
   def handle_info(_context, _message, state) do
