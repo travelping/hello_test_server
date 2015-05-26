@@ -4,11 +4,11 @@ HelloPingpong
 A sample service using [hello][]: It answers "pong" on a "ping".
 
 
-== Running
+## Running
 
     $> iex -S mix
 
-== Building
+## Building
 
 Install the following external dependencies (the names given are
 the ones found on a debian / ubuntu):
