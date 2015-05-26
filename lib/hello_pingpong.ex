@@ -28,8 +28,23 @@ defmodule HelloPingpong do
 
   def init(identifier, _), do: {:ok, 0}
 
-  def handle_request(_context, "Server.ping", _args, state) do
-    :crypto.rand_uniform(1, 1000) |> :timer.sleep
+  def to_integer(intlike) do
+    case intlike do
+    intlike when is_integer(intlike) -> intlike
+    intlike when is_binary(intlike) -> String.to_integer(intlike)
+    end
+  end
+
+  def random(upper) do
+    :crypto.rand_uniform(1, upper)
+  end
+
+  def handle_request(_context, "Server.ping", args, state) do
+    case args do
+    %{"rsleep" => rsleep} -> rsleep |> to_integer() |> random() |> :timer.sleep
+    %{"sleep" => sleep}   -> sleep  |> to_integer() |> :timer.sleep
+    _ -> nil
+    end
     {:stop, :normal, {:ok, "pong"}, state}
   end
 
