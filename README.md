@@ -1,7 +1,7 @@
-HelloPingpong
+HelloTestServer
 =============
 
-A sample service using [hello][]: It answers "pong" on a "ping".
+A sample service using [hello](https://github.com/travelping/hello): It answers "pong" on a "ping".
 
 
 ## Running

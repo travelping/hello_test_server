@@ -1,6 +1,6 @@
-defmodule HelloPingpongTest do
+defmodule HelloTestServerTest do
   use ExUnit.Case
-  doctest HelloPingpong
+  doctest HelloTestServer
 
   test "the truth" do
     assert 1 + 1 == 2

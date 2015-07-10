@@ -1,4 +1,4 @@
-defmodule HelloPingpong do
+defmodule HelloTestServer do
   use Application
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
@@ -10,14 +10,14 @@ defmodule HelloPingpong do
 
     children = [
       # Define workers and child supervisors to be supervised
-      # worker(HelloPingpong.Worker, [arg1, arg2, arg3]),
+      # worker(HelloTestServer.Worker, [arg1, arg2, arg3]),
     ]
     :hello.start_service(__MODULE__, [])
     :hello.start_listener(@url, [], :hello_proto_jsonrpc, [decoder: @decoder], :hello_router)
     :hello.bind(@url, __MODULE__)
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: HelloPingpong.Supervisor]
+    opts = [strategy: :one_for_one, name: HelloTestServer.Supervisor]
     Supervisor.start_link(children, opts)
   end
 

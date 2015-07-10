@@ -1,8 +1,8 @@
-defmodule HelloPingpong.Mixfile do
+defmodule HelloTestServer.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :hello_pingpong,
+    [app: :hello_test_server,
      version: "0.0.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -14,7 +14,7 @@ defmodule HelloPingpong.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [applications: [:logger, :elixir, :hello],
-     mod: {HelloPingpong, []}]
+     mod: {HelloTestServer, []}]
   end
 
   # Dependencies can be Hex packages:
