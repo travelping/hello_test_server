@@ -29,6 +29,6 @@ defmodule HelloTestServer.Mixfile do
   defp deps do
     [{:lager, "~> 2.1.1", override: true},
      {:jsx, github: "liveforeverx/jsx", branch: "mix_compile", override: true},
-     {:hello, github: "travelping/hello", branch: "hello_v3"}]
+     {:hello, github: "travelping/hello", branch: "master"}]
   end
 end

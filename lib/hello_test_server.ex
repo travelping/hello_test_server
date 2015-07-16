@@ -12,8 +12,8 @@ defmodule HelloTestServer do
       # Define workers and child supervisors to be supervised
       # worker(HelloTestServer.Worker, [arg1, arg2, arg3]),
     ]
-    :hello.start_listener(@url, [], :hello_proto_jsonrpc, [], HelloTestServer.Router)
-    :hello.bind(@url, __MODULE__)
+    Hello.start_listener(@url, [], :hello_proto_jsonrpc, [], HelloTestServer.Router)
+    Hello.bind(@url, __MODULE__)
     :ets.new(@rrtable, [:named_table, :public])
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
@@ -82,8 +82,8 @@ defmodule HelloTestServer do
   def client(), do: client("Server.ping")
   def client(method), do: client(method, [])
   def client(method, params) do
-    :hello_client.start({:local, __MODULE__}, 'zmq-tcp://127.0.0.1:26000', [], [], [])
-    :hello_client.call(__MODULE__, {method, params, []})
+    Hello.Client.start({:local, __MODULE__}, 'zmq-tcp://127.0.0.1:26000', [], [], [])
+    Hello.Client.call(__MODULE__, {method, params, []})
   end
 
 
