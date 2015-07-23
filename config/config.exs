@@ -24,3 +24,7 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+metricman_config = "deps/metricman/config/config.exs"
+if File.exists? metricman_config do
+  import_config "../" <> metricman_config
+end
