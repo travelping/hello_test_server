@@ -1,4 +1,4 @@
-HelloTestServer [![Build Status](https://travis-ci.org/travelping/hello_test_server.svg)](https://travis-ci.org/travelping/hello_test_server)
+HelloTestServer [![Build Status](https://travis-ci.org/travelping/hello_test_server.svg)](https://travis-ci.org/travelping/hello_test_server) [![Coverage Status](https://coveralls.io/repos/travelping/hello_test_server/badge.svg?branch=master&service=github)](https://coveralls.io/github/travelping/hello_test_server?branch=master)
 =============
 
 A test service using [hello](https://github.com/travelping/hello): 

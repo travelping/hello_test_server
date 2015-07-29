@@ -4,6 +4,7 @@ defmodule HelloTestServer.Mixfile do
   def project do
     [app: :hello_test_server,
      version: "0.1.0",
+     test_coverage: [tool: Coverex.Task, coveralls: true],
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(Mix.env)]
@@ -39,6 +40,8 @@ defmodule HelloTestServer.Mixfile do
      {:exrm, "~> 0.18.0"},
      {:metricman, github: "surik/metricman"},
      {:jsx, github: "liveforeverx/jsx", branch: "mix_compile", override: true},
-     {:hello, github: "travelping/hello", branch: "master"}]
+     {:hello, github: "travelping/hello", branch: "master"},
+     {:coverex, "~> 1.4.1", only: :test}, 
+   ]
   end
 end

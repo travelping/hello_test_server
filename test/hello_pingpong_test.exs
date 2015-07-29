@@ -9,6 +9,8 @@ defmodule HelloTestServerTest do
 
   test "ping" do
     assert {:ok, "pong"} == HelloTestServer.client()
+    assert {:ok, "pong"} == HelloTestServer.client("Server.ping", %{"sleep" => 100})
+    assert {:ok, "pong"} == HelloTestServer.client("Server.ping", %{"rsleep" => "100"})
   end
 
   test "unknown method" do
