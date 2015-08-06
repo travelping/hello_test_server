@@ -14,7 +14,7 @@ defmodule HelloTestServer.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :elixir, :hello, :runtime_tools, :exrun | (if Mix.env == :release do [:lager_journald_backend] else [] end)],
+    [applications: [:logger, :elixir, :hello, :runtime_tools, :exrun, :metricman | (if Mix.env == :release do [:lager_journald_backend] else [] end)],
      mod: {HelloTestServer, []}]
   end
 
