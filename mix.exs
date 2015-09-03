@@ -41,7 +41,8 @@ defmodule HelloTestServer.Mixfile do
      {:metricman, github: "surik/metricman"},
      {:jsx, github: "liveforeverx/jsx", branch: "mix_compile", override: true},
      {:hello, github: "travelping/hello", branch: "master"},
-     {:coverex, "~> 1.4.1", only: :test}, 
+     {:coverex, "~> 1.4.1", only: :test},
+     {:hackney, "~> 1.1.0", override: true}
    ]
   end
 end
