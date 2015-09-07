@@ -3,7 +3,6 @@ defmodule HelloTestServer do
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
-  @url 'zmq-tcp://127.0.0.1:26000'
   @rrtable :test_server_round_roubin_table
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
@@ -12,8 +11,8 @@ defmodule HelloTestServer do
       # Define workers and child supervisors to be supervised
       # worker(HelloTestServer.Worker, [arg1, arg2, arg3]),
     ]
-    Hello.start_listener(@url, [], :hello_proto_jsonrpc, [], HelloTestServer.Router)
-    Hello.bind(@url, __MODULE__)
+    Hello.start_listener(url(), [], :hello_proto_jsonrpc, [], HelloTestServer.Router)
+    Hello.bind(url(), __MODULE__)
     :ets.new(@rrtable, [:named_table, :public])
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
@@ -21,6 +20,8 @@ defmodule HelloTestServer do
     Supervisor.start_link(children, opts)
   end
 
+  def url(), do: Application.get_env(:hello_test_server, :listen)
+  defp path(), do: Application.get_env(:hello_test_server, :respond_path)
   def name(), do: "ping/server"
   def router_key(), do: ""
   def validation(), do: __MODULE__
@@ -49,7 +50,7 @@ defmodule HelloTestServer do
   end
 
   def handle_request(_context, method, args, state) do
-    dirname = Application.app_dir(:hello_test_server, "priv/replies") |> Path.join(method)
+    dirname = Application.app_dir(:hello_test_server, path()) |> Path.join(method)
     case File.ls(dirname) do
       {:ok, files} -> 
         counter = case :ets.lookup(@rrtable, method) do
@@ -82,7 +83,7 @@ defmodule HelloTestServer do
   def client(), do: client("Server.ping")
   def client(method), do: client(method, [])
   def client(method, params) do
-    Hello.Client.start({:local, __MODULE__}, 'zmq-tcp://127.0.0.1:26000', [], [], [])
+    Hello.Client.start({:local, __MODULE__}, url(), [], [], [])
     Hello.Client.call(__MODULE__, {method, params, []})
   end
 
