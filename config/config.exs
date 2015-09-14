@@ -17,7 +17,8 @@ use Mix.Config
 #       metadata: [:user_id]
 config :hello_test_server,
     listen: 'zmq-tcp://127.0.0.1:26000',
-    respond_path: "priv/replies"
+    respond_path: "priv/replies",
+    run_script: false
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment

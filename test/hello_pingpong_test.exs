@@ -5,6 +5,9 @@ defmodule HelloTestServerTest do
   setup_all do
     :meck.new(Application, [:passthrough])
     :meck.expect(Application, :app_dir, fn(:hello_test_server, "priv/replies") -> "test/replies" end)
+    on_exit fn ->
+      :meck.unload
+    end
   end
 
   test "ping" do

@@ -50,7 +50,11 @@ defmodule HelloTestServer do
   end
 
   def handle_request(_context, method, args, state) do
-    dirname = Application.app_dir(:hello_test_server, path()) |> Path.join(method)
+    if Application.get_env(:hello_test_server, :run_script) do
+      dirname = System.cwd! |> rel_path_join(path()) |> Path.join(method)
+    else
+      dirname = Application.app_dir(:hello_test_server, path()) |> Path.join(method)
+    end
     case File.ls(dirname) do
       {:ok, files} -> 
         counter = case :ets.lookup(@rrtable, method) do
@@ -96,6 +100,14 @@ defmodule HelloTestServer do
 
   defp choose_reply(files, counter) do
     Enum.at(files, rem(counter, length(files)))
+  end
+
+  defp rel_path_join(path1, path2) do
+    if Path.type(path2) == :absolute do
+      path2
+    else
+      Path.join(path1, path2) |> Path.expand
+    end
   end
 end
 
