@@ -7,7 +7,6 @@ use Mix.Config
 # file won't be loaded nor affect the parent project. For this reason,
 # if you want to provide default values for your application for third-
 # party users, it should be done in your mix.exs file.
-
 # Sample configuration:
 #
 #     config :logger,
@@ -16,6 +15,10 @@ use Mix.Config
 #     config :logger, :console,
 #       format: "$date $time [$level] $metadata$message\n",
 #       metadata: [:user_id]
+config :hello_test_server,
+    listen: 'zmq-tcp://127.0.0.1:26000',
+    respond_path: "priv/replies",
+    run_script: false
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
