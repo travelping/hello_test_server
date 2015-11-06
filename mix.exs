@@ -44,6 +44,9 @@ defmodule HelloTestServer.Mixfile do
      {:coverex, "~> 1.4.1", only: :test},
      #Dependencies due to resolution problems in mix
      {:hackney, "~> 1.1.0", override: true},
+     {:meck, github: "eproxus/meck", override: true},
+     {:edown, github: "uwiger/edown", override: true},
+     {:goldrush, github: "DeadZen/goldrush", override: true, tag: "0.1.6"}
    ]
   end
 end
