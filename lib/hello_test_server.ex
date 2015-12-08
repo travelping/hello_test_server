@@ -51,9 +51,11 @@ defmodule HelloTestServer do
 
   def handle_request(_context, method, args, state) do
     if Application.get_env(:hello_test_server, :run_script) do
-      dirname = System.cwd! |> rel_path_join(path()) |> Path.join(method)
+      path = System.cwd! |> rel_path_join(path()) 
+      dirname = path |> Path.join(method)
     else
-      dirname = Application.app_dir(:hello_test_server, path()) |> Path.join(method)
+      path = Application.app_dir(:hello_test_server, path()) 
+      dirname = path |> Path.join(method)
     end
     case File.ls(dirname) do
       {:ok, files} -> 
@@ -69,7 +71,7 @@ defmodule HelloTestServer do
         scriptName = dirname <> ".ex"
         case File.exists?(scriptName) do
           true -> 
-            {reply, _} = File.read!(scriptName) |> Code.eval_string([params: args])
+            {reply, _} = File.read!(scriptName) |> Code.eval_string([params: args, path: path])
             {:stop, :normal, {:ok, reply}, state}
           false -> {:stop, :normal, {:ok, "not_found"}, state}
         end
