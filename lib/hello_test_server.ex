@@ -27,7 +27,7 @@ defmodule HelloTestServer do
   def validation(), do: __MODULE__
   def request(_, m, p), do: {:ok, m, p}
 
-  def init(_identifier, _), do: {:ok, 0}
+  def init(_identifier, _), do: {:ok, init_cache}
 
   def to_integer(intlike) do
     case intlike do
@@ -50,32 +50,10 @@ defmodule HelloTestServer do
   end
 
   def handle_request(_context, method, args, state) do
-    if Application.get_env(:hello_test_server, :run_script) do
-      path = System.cwd! |> rel_path_join(path()) 
-      dirname = path |> Path.join(method)
-    else
-      path = Application.app_dir(:hello_test_server, path()) 
-      dirname = path |> Path.join(method)
-    end
-    case File.ls(dirname) do
-      {:ok, files} -> 
-        counter = case :ets.lookup(@rrtable, method) do
-          [{^method, n}] -> n
-          _ -> :ets.insert(@rrtable, {method, 0})
-          0
-        end
-        reply = filter_json(dirname, files) |> choose_reply(counter) |> File.read!
-        :ets.update_counter(@rrtable, method, {2, 1})
-        {:stop, :normal, {:ok, :jsx.decode(reply)}, state}
-      _ -> 
-        scriptName = dirname <> ".ex"
-        case File.exists?(scriptName) do
-          true -> 
-            {reply, _} = File.read!(scriptName) |> Code.eval_string([params: args, path: path])
-            {:stop, :normal, {:ok, reply}, state}
-          false -> {:stop, :normal, {:ok, "not_found"}, state}
-        end
-    end
+    counter = get_counter(method)
+    {new_state, reply} = get_reply(state, args, method, counter)
+    increase_counter(method)
+    {:stop, :normal, reply, new_state}
   end
 
   def handle_info(_context, _message, state) do
@@ -93,6 +71,77 @@ defmodule HelloTestServer do
     Hello.Client.call(__MODULE__, {method, params, []})
   end
 
+  defp init_cache() do
+    if Application.get_env(:hello_test_server, :cached, false), do: %{}, else: :no_cache
+  end
+
+  defp get_reply(:no_cache, args, method, counter), do: {:no_cache, get_reply_no_cache(args, method, counter)}
+  defp get_reply(cache, args, method, counter), do: get_reply_cached(cache, args, method, counter)
+
+  defp get_reply_cached(cache, args, method, counter) do
+    case Map.get(cache, method) do
+      nil -> update_cache(cache, args, method, counter)
+      l when is_list(l) -> {cache, choose_reply(l, counter)}
+      reply = {:ok, _} -> {cache, reply}
+    end
+  end
+
+  defp update_cache(cache, args, method, counter) do
+    {path, dirname} = get_path_and_dir(method)
+    new_entry =
+      case File.ls(dirname) do
+        {:ok, files} ->
+          json_files = filter_json(dirname, files)
+          for json_file <- json_files, do: {:ok, File.read!(json_file) |> :jsx.decode}
+        _ ->
+          scriptName = dirname <> ".ex"
+          case File.exists?(scriptName) do
+            true ->
+              {reply, _} = File.read!(scriptName) |> Code.eval_string([params: args, path: path])
+              {:ok, reply}
+            false -> {:ok, "not_found"}
+          end
+      end
+    get_reply_cached(Map.put(cache, method, new_entry), args, method, counter)
+  end
+
+  defp get_reply_no_cache(args, method, counter) do
+    {path, dirname} = get_path_and_dir(method)
+    case File.ls(dirname) do
+      {:ok, files} ->
+        reply = filter_json(dirname, files) |> choose_reply(counter) |> File.read!
+        {:ok, :jsx.decode(reply)}
+      _ ->
+        scriptName = dirname <> ".ex"
+        case File.exists?(scriptName) do
+          true ->
+            {reply, _} = File.read!(scriptName) |> Code.eval_string([params: args, path: path])
+            {:ok, reply}
+          false -> {:ok, "not_found"}
+        end
+    end
+  end
+
+  defp get_path_and_dir(method) do
+    if Application.get_env(:hello_test_server, :run_script) do
+      path = System.cwd! |> rel_path_join(path()) 
+      dirname = path |> Path.join(method)
+    else
+      path = Application.app_dir(:hello_test_server, path()) 
+      dirname = path |> Path.join(method)
+    end
+    {path, dirname}
+  end
+
+  defp get_counter(method) do
+    case :ets.lookup(@rrtable, method) do
+      [{^method, n}] -> n
+      _ -> :ets.insert(@rrtable, {method, 0})
+        0
+    end
+  end
+
+  defp increase_counter(method), do: :ets.update_counter(@rrtable, method, {2, 1})
 
   defp filter_json(dirname, files) do
     for file <- files, Path.extname(file) == ".json" do
