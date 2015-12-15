@@ -19,7 +19,14 @@
       to: "hello_test_server.respond_path",
       datatype: :binary,
       default: "responses"
-    ]
+    ],
+    "hello_test_server.cached": [
+      doc: """
+      Use caching, will execute scripts only the first time they are called.
+      """,
+      to: "hello_test_server.cached",
+      datatype: :boolean,
+      default: false]
   ],
   translations: [
     "hello_test_server.listen": fn
