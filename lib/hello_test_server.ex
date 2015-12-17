@@ -4,6 +4,8 @@ defmodule HelloTestServer do
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   @rrtable :test_server_round_roubin_table
+  @cache_table :test_server_cache_table
+
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
@@ -14,6 +16,7 @@ defmodule HelloTestServer do
     Hello.start_listener(url(), [], :hello_proto_jsonrpc, [], HelloTestServer.Router)
     Hello.bind(url(), __MODULE__)
     :ets.new(@rrtable, [:named_table, :public])
+    :ets.new(@cache_table, [:set, :named_table, :public])
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: HelloTestServer.Supervisor]
@@ -27,7 +30,7 @@ defmodule HelloTestServer do
   def validation(), do: __MODULE__
   def request(_, m, p), do: {:ok, m, p}
 
-  def init(_identifier, _), do: {:ok, init_cache}
+  def init(_identifier, _), do: {:ok, nil}
 
   def to_integer(intlike) do
     case intlike do
@@ -51,9 +54,10 @@ defmodule HelloTestServer do
 
   def handle_request(_context, method, args, state) do
     counter = get_counter(method)
-    {new_state, reply} = get_reply(state, args, method, counter)
+    use_cache = Application.get_env(:hello_test_server, :cached, false)
+    reply = get_reply(use_cache, args, method, counter)
     increase_counter(method)
-    {:stop, :normal, reply, new_state}
+    {:stop, :normal, reply, state}
   end
 
   def handle_info(_context, _message, state) do
@@ -71,22 +75,18 @@ defmodule HelloTestServer do
     Hello.Client.call(__MODULE__, {method, params, []})
   end
 
-  defp init_cache() do
-    if Application.get_env(:hello_test_server, :cached, false), do: %{}, else: :no_cache
-  end
+  defp get_reply(false, args, method, counter), do: get_reply_no_cache(args, method, counter)
+  defp get_reply(true, args, method, counter), do: get_reply_cached(args, method, counter)
 
-  defp get_reply(:no_cache, args, method, counter), do: {:no_cache, get_reply_no_cache(args, method, counter)}
-  defp get_reply(cache, args, method, counter), do: get_reply_cached(cache, args, method, counter)
-
-  defp get_reply_cached(cache, args, method, counter) do
-    case Map.get(cache, method) do
-      nil -> update_cache(cache, args, method, counter)
-      l when is_list(l) -> {cache, choose_reply(l, counter)}
-      reply = {:ok, _} -> {cache, reply}
+  defp get_reply_cached(args, method, counter) do
+    case :ets.lookup(@cache_table, {method, args}) do
+      [] -> update_cache(args, method, counter)
+      [{_, l}] when is_list(l) -> choose_reply(l, counter)
+      [{_, reply = {:ok, _}}] -> reply
     end
   end
 
-  defp update_cache(cache, args, method, counter) do
+  defp update_cache(args, method, counter) do
     {path, dirname} = get_path_and_dir(method)
     new_entry =
       case File.ls(dirname) do
@@ -102,7 +102,8 @@ defmodule HelloTestServer do
             false -> {:ok, "not_found"}
           end
       end
-    get_reply_cached(Map.put(cache, method, new_entry), args, method, counter)
+    :ets.insert(@cache_table, {{method, args}, new_entry})
+    get_reply_cached(args, method, counter)
   end
 
   defp get_reply_no_cache(args, method, counter) do
